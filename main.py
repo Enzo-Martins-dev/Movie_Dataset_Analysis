@@ -149,5 +149,69 @@ duracao_genero()
 
 
 
-def lucro_por_numero_premiacoes():
-    return 0
+def lucro_premiacoes():
+    premiacao_minima = int(df['Oscar and Golden Globes awards'].min())
+    premiacao_maxima = int(df['Oscar and Golden Globes awards'].max())
+    intervalo_premiacoes = st.slider('Intervalo de Premiacoes', premiacao_minima, premiacao_maxima, (premiacao_minima, premiacao_maxima))
+
+    df['Lucro'] = df['Earnings'] - df['Budget']
+
+    df_filtrado = df.loc[(df['Oscar and Golden Globes awards'] >= intervalo_premiacoes[0]) & 
+                         (df['Oscar and Golden Globes awards'] <= intervalo_premiacoes[1])]
+    
+    df_filtrado_agrupado = df_filtrado.groupby('Oscar and Golden Globes awards')['Lucro'].mean().reset_index()
+
+    plt.figure(figsize=(10, 6))
+    sns.barplot(data=df_filtrado_agrupado, x='Oscar and Golden Globes awards', y='Lucro', palette='Blues_d')
+
+    plt.title('Lucro Médio por Número de Prêmios (Oscar e Globo de Ouro)', fontsize=16)
+    plt.xlabel('Número de Prêmios', fontsize=12)
+    plt.ylabel('Lucro Médio (em milhões)', fontsize=12)
+
+    st.pyplot(plt)
+    plt.close()
+
+lucro_premiacoes()
+
+def grafico_lucro_por_premiacao_bubble(df):
+    premiacao_minima = int(df['Oscar and Golden Globes awards'].min())
+    premiacao_maxima = int(df['Oscar and Golden Globes awards'].max())
+
+    intervalo_premiacoes = st.slider('Intervalo de Premiações', premiacao_minima, premiacao_maxima, (premiacao_minima, premiacao_maxima))
+
+    df['Lucro'] = df['Earnings'] - df['Budget']
+   
+    df_filtrado = df.loc[(df['Oscar and Golden Globes awards'] >= intervalo_premiacoes[0]) & 
+                         (df['Oscar and Golden Globes awards'] <= intervalo_premiacoes[1])]
+
+   
+    df_filtrado_agrupado = df_filtrado.groupby('Oscar and Golden Globes awards').agg({'Lucro': 'mean', 'Movie': 'count'}).reset_index()
+    df_filtrado_agrupado.rename(columns={'Movie': 'Numero de Filmes'}, inplace=True)
+
+    
+    plt.figure(figsize=(10, 6))
+    
+    bubble = plt.scatter(
+        data=df_filtrado_agrupado, 
+        x='Oscar and Golden Globes awards', 
+        y='Lucro', 
+        s=df_filtrado_agrupado['Numero de Filmes'] * 50,  
+        c=df_filtrado_agrupado['Numero de Filmes'],
+        alpha=0.6, 
+        edgecolor='black', 
+        cmap='viridis'
+    )
+    
+    plt.colorbar(bubble, label='Número de Filmes')
+
+    plt.title('Lucro Médio por Número de Prêmios (Oscar e Globo de Ouro) com Tamanho Representando Filmes', fontsize=16)
+    plt.xlabel('Número de Prêmios', fontsize=12)
+    plt.ylabel('Lucro Médio (em milhões)', fontsize=12)
+
+    st.pyplot(plt)
+    plt.close()
+
+grafico_lucro_por_premiacao_bubble(df)
+
+
+
