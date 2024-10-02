@@ -6,7 +6,7 @@ Esse Projeto visa mostrar relações existentes em um Dataset com informações 
 Os dados utilizados nessa análise podem ser encontradas em: https://www.kaggle.com/datasets/delfinaoliva/movies.
 
 ## Responsáveis
-Enzo Martins: https://github.com/Enzo-Martins-dev
+Enzo Martins: https://github.com/Enzo-Martins-dev  
 Fábio Monteiro: https://github.com/Fabio-Mnte
 
 
