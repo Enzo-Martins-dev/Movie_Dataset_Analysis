@@ -3,7 +3,7 @@
 ## Objetivo
 Esse Projeto visa mostrar relações existentes em um Dataset com informações de quase 4000 filmes, para gerar insights e facilitar a tomada de decisões por profissionais da indústria cinematográfica.
 
-Os dados utilizados nessa análise podem ser encontradas em: https://www.kaggle.com/datasets/delfinaoliva/movies.
+Os dados utilizados nessa análise podem ser encontrados em: https://www.kaggle.com/datasets/delfinaoliva/movies.
 
 ## Responsáveis
 Enzo Martins: https://github.com/Enzo-Martins-dev  
@@ -14,7 +14,7 @@ Fábio Monteiro: https://github.com/Fabio-Mnte
 * Python: linguagem de programação base.
 * Pandas: visualizar e manipular os dados de forma mais eficaz.
 * Matplotlib: criação de gráficos para auxiliar na visualização.
-* Seaborn:  gerar gráficos de mais fácil visualização e entendimento.
+* Seaborn: gerar gráficos de mais fácil visualização e entendimento.
 * Streamlit: mostrar todas as informações visuais em um ambiente mais agradável e fazer deploy para acesso remoto.
 
 
