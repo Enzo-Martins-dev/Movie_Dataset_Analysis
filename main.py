@@ -40,6 +40,7 @@ def categoria_decada():
     st.pyplot(plt)
     plt.close()
 
+    st.text('É possível verificar através da porcentagem de filmes feitas por gênero + faturamento por gênero quais os gêneros mais adorados pela industria atualmente e selecionar um gênero de filme futuro que provavelmente dará mais sucesso')
 categoria_decada()
 
 def nota_faturamento_dist():
@@ -153,20 +154,26 @@ def lucro_premiacoes():
     premiacao_minima = int(df['Oscar and Golden Globes awards'].min())
     premiacao_maxima = int(df['Oscar and Golden Globes awards'].max())
     intervalo_premiacoes = st.slider('Intervalo de Premiacoes', premiacao_minima, premiacao_maxima, (premiacao_minima, premiacao_maxima))
-
-    df['Lucro'] = df['Earnings'] - df['Budget']
+    toggle = st.toggle('Desligar Outlier', value=False, key="toggle1", help=None, on_change=None, args=None, kwargs=None, disabled=False, label_visibility="visible")
 
     df_filtrado = df.loc[(df['Oscar and Golden Globes awards'] >= intervalo_premiacoes[0]) & 
                          (df['Oscar and Golden Globes awards'] <= intervalo_premiacoes[1])]
     
-    df_filtrado_agrupado = df_filtrado.groupby('Oscar and Golden Globes awards')['Lucro'].mean().reset_index()
+    df_filtrado_agrupado = df_filtrado.groupby('Oscar and Golden Globes awards')['Earnings'].mean().reset_index()
+    df_filtrado_sem_outlier = df_filtrado_agrupado.loc[(df_filtrado_agrupado['Earnings'] < 1000000000)] 
 
     plt.figure(figsize=(10, 6))
-    sns.barplot(data=df_filtrado_agrupado, x='Oscar and Golden Globes awards', y='Lucro', palette='Blues_d')
+    if toggle:
+        sns.barplot(data=df_filtrado_sem_outlier, x='Oscar and Golden Globes awards', y='Earnings', palette='Blues_d')
+    else:
+        sns.barplot(data=df_filtrado_agrupado, x='Oscar and Golden Globes awards', y='Earnings', palette='Blues_d')
 
     plt.title('Lucro Médio por Número de Prêmios (Oscar e Globo de Ouro)', fontsize=16)
     plt.xlabel('Número de Prêmios', fontsize=12)
-    plt.ylabel('Lucro Médio (em milhões)', fontsize=12)
+    if toggle:
+        plt.ylabel('Lucro Médio (em Centenas de Milhões)', fontsize=12)
+    else:
+        plt.ylabel('Lucro Médio (em Bilhões)', fontsize=12)
 
     st.pyplot(plt)
     plt.close()
@@ -179,28 +186,44 @@ def grafico_lucro_por_premiacao_bubble(df):
 
     intervalo_premiacoes = st.slider('Intervalo de Premiações', premiacao_minima, premiacao_maxima, (premiacao_minima, premiacao_maxima))
 
-    df['Lucro'] = df['Earnings'] - df['Budget']
+    
    
     df_filtrado = df.loc[(df['Oscar and Golden Globes awards'] >= intervalo_premiacoes[0]) & 
                          (df['Oscar and Golden Globes awards'] <= intervalo_premiacoes[1])]
 
-   
-    df_filtrado_agrupado = df_filtrado.groupby('Oscar and Golden Globes awards').agg({'Lucro': 'mean', 'Movie': 'count'}).reset_index()
+    toggle = st.toggle('Desligar Outlier', value=False, key="toggle2", help=None, on_change=None, args=None, kwargs=None, disabled=False, label_visibility="visible")
+
+   # remover_outlier(df_filtrado_agrupado, toggle)
+    df_filtrado_agrupado = df_filtrado.groupby('Oscar and Golden Globes awards').agg({'Earnings': 'mean', 'Movie': 'count'}).reset_index()
     df_filtrado_agrupado.rename(columns={'Movie': 'Numero de Filmes'}, inplace=True)
+    df_filtrado_sem_outlier = df_filtrado_agrupado.loc[(df_filtrado_agrupado['Earnings'] < 1000000000)] 
 
     
+
     plt.figure(figsize=(10, 6))
     
-    bubble = plt.scatter(
-        data=df_filtrado_agrupado, 
-        x='Oscar and Golden Globes awards', 
-        y='Lucro', 
-        s=df_filtrado_agrupado['Numero de Filmes'] * 50,  
-        c=df_filtrado_agrupado['Numero de Filmes'],
-        alpha=0.6, 
-        edgecolor='black', 
-        cmap='viridis'
-    )
+    if toggle:
+        bubble = plt.scatter(
+            data=df_filtrado_sem_outlier, 
+            x='Oscar and Golden Globes awards', 
+            y='Earnings', 
+            s=df_filtrado_sem_outlier['Numero de Filmes'] * 50,  
+            c=df_filtrado_sem_outlier['Numero de Filmes'],
+            alpha=0.6, 
+            edgecolor='black', 
+            cmap='viridis'
+        )
+    else:
+        bubble = plt.scatter(
+            data=df_filtrado_agrupado, 
+            x='Oscar and Golden Globes awards', 
+            y='Earnings', 
+            s=df_filtrado_agrupado['Numero de Filmes'] * 50,  
+            c=df_filtrado_agrupado['Numero de Filmes'],
+            alpha=0.6, 
+            edgecolor='black', 
+            cmap='viridis'
+        )
     
     plt.colorbar(bubble, label='Número de Filmes')
 
@@ -213,5 +236,63 @@ def grafico_lucro_por_premiacao_bubble(df):
 
 grafico_lucro_por_premiacao_bubble(df)
 
+def grafico_lucro_por_genero(df):
+    st.text('Lucro por Gênero de Filme')
 
+    genero = df['Genre'].unique()
+    genero_escolhido = []
+    for i in genero:
+        if st.checkbox(i, value=False, key=i):
+            genero_escolhido.append(i)
+    if genero_escolhido:
+        df_filtrado = df[df['Genre'].isin(genero_escolhido)]
 
+        df_filtrado['Genre'] = df['Genre'].apply(lambda x: x[:3])
+        df_resultado = df_filtrado.groupby('Genre')['Earnings'].mean().reset_index()
+        #st.bar_chart(df_resultado.set_index('Genre'))
+
+        grafico_faturamento_genero = sns.barplot(
+            data = df_resultado,
+            x = 'Genre',
+            y = 'Earnings'
+        )
+        grafico_faturamento_genero.set(xlabel = 'Genre', ylabel = 'Faturamento medio')
+        #sns.set_theme("darkgrid")
+        st.pyplot(plt)
+        plt.close()
+    else:
+        st.write("Nenhum gênero foi selecionado.")
+
+grafico_lucro_por_genero(df)
+
+def grafico_perdas_por_genero(df):
+    st.text('Déficit por Gênero de Filme. (Considerados apenas os filmes que tiveram déficit)')
+
+    genero = df['Genre'].unique()
+    genero_escolhido = []
+    for i in genero:
+        if st.checkbox(i, value=False, key=f"{i}_perdas"):
+            genero_escolhido.append(i)
+    if genero_escolhido:
+        df_filtrado = df[df['Genre'].isin(genero_escolhido)]
+
+        
+        df_perdas = df.loc[(df["Earnings"]) < 0]
+        df_resultado = pd.concat([df_filtrado, df_perdas],axis=0,ignore_index=True)
+        df_resultado = df_filtrado.groupby('Genre')["Earnings"].sum().reset_index()
+        #st.bar_chart(df_resultado.set_index('Genre'))
+        df_resultado['Genre'] = df_resultado['Genre'].apply(lambda x: x[:3])
+        
+        grafico_faturamento_genero = sns.barplot(
+            data = df_resultado,
+            x = 'Genre',
+            y = 'Earnings'
+        )
+        grafico_faturamento_genero.set(xlabel = 'Genre', ylabel = 'Perdas')
+        #sns.set_theme("darkgrid")
+        st.pyplot(plt)
+        plt.close()
+    else:
+        st.write("Nenhum gênero foi selecionado.")
+
+grafico_perdas_por_genero(df)
